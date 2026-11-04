@@ -46,7 +46,7 @@
    ```powershell
    cd "$HOME\.claude\skills\slide-co-create"; python scripts\setup.py
    ```
-   最后输出 `セットアップ完了`（安装完成）就能用了。测试用 PDF 在 `generated/setup_check/test.pdf`。
+   最后输出 `Setup complete` 就能用了。测试用 PDF 在 `generated/setup_check/test.pdf`。
 
    Linux（Debian / Ubuntu）需要先运行 `sudo apt install python3-venv`；如果第 2 步中途提示，再运行 `sudo npx playwright install-deps chromium`。
 
@@ -58,9 +58,9 @@
 |---|---|
 | `No module named 'fitz'` | 还没运行安装脚本，执行第 2 步 |
 | `externally-managed-environment`（macOS） | 你在往系统 pip 里装。不要用 `pip install`，用 `setup.py`（它装进 `.venv`） |
-| `venv を作れない`（无法创建 venv，Linux） | 运行 `sudo apt install python3-venv` 后重跑 |
-| `chromium が起動しない`（chromium 无法启动，Linux） | 运行 `sudo npx playwright install-deps chromium` 后重跑 |
-| `Edge / Chrome が見つからない`（找不到 Edge / Chrome） | 重跑 `setup.py`（会装好 chromium）。想用指定浏览器时，把环境变量 `MBB_BROWSER` 设为它的可执行文件路径 |
+| `Could not create a venv`（无法创建 venv，Linux） | 运行 `sudo apt install python3-venv` 后重跑 |
+| `chromium won't start`（chromium 无法启动，Linux） | 运行 `sudo npx playwright install-deps chromium` 后重跑 |
+| `No Edge / Chrome found`（找不到 Edge / Chrome） | 重跑 `setup.py`（会装好 chromium）。想用指定浏览器时，把环境变量 `MBB_BROWSER` 设为它的可执行文件路径 |
 | 找不到 `npm` | 先安装 Node.js，再重做第 2 步 |
 | PDF 里的字体变了 | 技能文件夹被移动过。在新位置用 `new_deck.py` 重新生成幻灯片（内置字体按绝对路径引用） |
 

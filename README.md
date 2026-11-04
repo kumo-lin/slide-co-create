@@ -46,7 +46,7 @@ Requirements: [Claude Code](https://claude.com/claude-code), Git, Python 3.9+, N
    ```powershell
    cd "$HOME\.claude\skills\slide-co-create"; python scripts\setup.py
    ```
-   You're ready when it prints `セットアップ完了` ("setup complete"). The test PDF is at `generated/setup_check/test.pdf`.
+   You're ready when it prints `Setup complete`. The test PDF is at `generated/setup_check/test.pdf`.
 
    On Linux (Debian / Ubuntu), first run `sudo apt install python3-venv`, and if step 2 asks for it, `sudo npx playwright install-deps chromium`.
 
@@ -58,9 +58,9 @@ Troubleshooting:
 |---|---|
 | `No module named 'fitz'` | Setup hasn't run. Do step 2 |
 | `externally-managed-environment` (macOS) | You're installing into the system pip. Use `setup.py` instead of `pip install` (it installs into `.venv`) |
-| `venv を作れない` ("cannot create venv", Linux) | Install `python3-venv` with `sudo apt install python3-venv`, then rerun |
-| `chromium が起動しない` ("chromium won't start", Linux) | Run `sudo npx playwright install-deps chromium`, then rerun |
-| `Edge / Chrome が見つからない` ("Edge / Chrome not found") | Rerun `setup.py` (it installs chromium). To use a specific browser, set the `MBB_BROWSER` environment variable to its executable path |
+| `Could not create a venv` (Linux) | Install `python3-venv` with `sudo apt install python3-venv`, then rerun |
+| `chromium won't start` (Linux) | Run `sudo npx playwright install-deps chromium`, then rerun |
+| `No Edge / Chrome found` | Rerun `setup.py` (it installs chromium). To use a specific browser, set the `MBB_BROWSER` environment variable to its executable path |
 | `npm` not found | Install Node.js, then redo step 2 |
 | PDF text renders in a different font | The skill folder was moved. Regenerate the deck with `new_deck.py` in the new location (bundled fonts are referenced by absolute path) |
 
