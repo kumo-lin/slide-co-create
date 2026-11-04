@@ -1,104 +1,104 @@
 # slide-co-create
 
-ユーザーと議論しながら、経営会議に出せる品質のスライドを Claude Code で一緒に作るスキルです。いきなり資料を作らず、先に「誰に・何を決めてもらう資料か」を詰め、ストーリーライン、サンプル1〜2枚の順に合意してから全ページを組みます。出来上がりは HTML から書き出した PDF（16:9）で、編集できる PPTX が要るときは別スキル pdf-to-editable に渡します（このリポジトリには含まれていません）。
+English | [中文](README.zh-CN.md)
 
-## 進め方
+A Claude Code skill for co-creating executive-ready slide decks through discussion. Instead of generating slides right away, it first pins down who the deck is for and what decision it should drive, then agrees on the storyline and one or two sample slides before building every page. The output is a 16:9 PDF exported from HTML. If you need an editable PPTX, hand the finished PDF to a separate skill such as pdf-to-editable (not included in this repository).
 
-| 段階 | やること | ユーザーとの合意 |
+## How it works
+
+| Stage | What happens | Agreement with you |
 |---|---|---|
-| Gate A | 目的・読み手・決めてほしいこと・材料を確認する | 材料から埋まらない項目だけを1回で聞く |
-| Gate B | ページごとのタイトル（結論と示唆を入れた文）、型、根拠をブループリントにする | 承認するまで HTML は作らない |
-| Gate C | サンプル1〜2枚を組んで PNG で見せる | 承認してから残りを組む |
-| 検査 | 規約の機械チェック、実レンダリング検査、別エージェントによるレビュー | FAIL 0 で納品 |
+| Gate A | Confirm the purpose, audience, decision to be made, and source material | Asks once, only about what the material doesn't already answer |
+| Gate B | Build a blueprint: per-page title (a sentence carrying the conclusion and its implication), layout type, and evidence | No HTML is built until you approve |
+| Gate C | Build one or two sample slides and show them as PNGs | The rest is built only after you approve |
+| Checks | Rule linting, real-render layout checks, and a review by a separate agent | Delivered with 0 FAIL |
 
-組むときの主な規約（正典は `references/slide-rules.md`）:
+Key layout rules (the canonical list is `references/slide-rules.md`):
 
-- 結論と示唆はタイトルに入れる（2行まで）。サブタイトルと、下部の「まとめ」帯は作らない。
-- 文字サイズは、内容 12pt 以上、タイトル 24pt に固定。出典・フッター・ページ番号・右上タグは対象外。
-- 1枚の中で、行動・効果・仕様のように粒度の違うものを同じ階層の箇条書きに並べない。
+- Put the conclusion and implication in the title (up to two lines). No subtitles and no "summary" band at the bottom.
+- Body text is at least 12pt; titles are fixed at 24pt. Sources, footers, page numbers, and corner tags are exempt.
+- Don't mix items of different granularity (actions, effects, specifications) in the same bullet level on one slide.
 
-## セットアップ
+The skill's instructions and rule files are written in Japanese. Claude reads them either way, so you can work with it in any language.
 
-必要なもの: [Claude Code](https://claude.com/claude-code)、Git、Python 3.9 以上、Node.js 18 以上。Mac / Windows / Linux で動く。PDF 化には Edge か Chrome を使い、どちらも無ければセットアップで入る chromium を使う。
+## Setup
 
-1. スキルのフォルダに clone する。**フォルダ名は `slide-co-create` にする**（SKILL.md がこのパスを前提にしている）。
+Requirements: [Claude Code](https://claude.com/claude-code), Git, Python 3.9+, Node.js 18+. Works on macOS, Windows, and Linux. PDF export uses Edge or Chrome; if neither is installed, it uses the chromium that setup installs.
 
-   Mac / Linux:
+1. Clone into your skills folder. **The folder must be named `slide-co-create`** (SKILL.md expects this path).
+
+   macOS / Linux:
    ```bash
    git clone https://github.com/kumo-lin/slide-co-create.git ~/.claude/skills/slide-co-create
    ```
-   Windows（PowerShell）:
+   Windows (PowerShell):
    ```powershell
    git clone https://github.com/kumo-lin/slide-co-create.git "$HOME\.claude\skills\slide-co-create"
    ```
 
-2. セットアップスクリプトを1回実行する。`.venv` に PyMuPDF を入れ、playwright と chromium を入れ、2枚のテストデッキを PDF まで通して確認する（数分かかる）。
+2. Run the setup script once. It installs PyMuPDF into `.venv`, installs playwright and chromium, and builds a two-slide test deck all the way to PDF (takes a few minutes).
 
-   Mac / Linux:
+   macOS / Linux:
    ```bash
    cd ~/.claude/skills/slide-co-create && python3 scripts/setup.py
    ```
-   Windows（PowerShell）:
+   Windows (PowerShell):
    ```powershell
    cd "$HOME\.claude\skills\slide-co-create"; python scripts\setup.py
    ```
-   最後に「セットアップ完了」と出れば使える。確認用 PDF は `generated/setup_check/test.pdf`。
+   You're ready when it prints `セットアップ完了` ("setup complete"). The test PDF is at `generated/setup_check/test.pdf`.
 
-   Linux（Debian / Ubuntu）は先に `sudo apt install python3-venv` と、手順2の途中で案内が出たら `sudo npx playwright install-deps chromium` が要る。
+   On Linux (Debian / Ubuntu), first run `sudo apt install python3-venv`, and if step 2 asks for it, `sudo npx playwright install-deps chromium`.
 
-3. Claude Code を開き直す（起動中のセッションには新しいスキルが読み込まれない）。
+3. Restart Claude Code (running sessions don't pick up new skills).
 
-うまくいかないとき:
+Troubleshooting:
 
-| 症状 | 対処 |
+| Symptom | Fix |
 |---|---|
-| `No module named 'fitz'` | `setup.py` が済んでいない。手順2を実行する |
-| `externally-managed-environment`（Mac） | システムの pip に入れようとしている。`pip install` ではなく `setup.py` を使う（`.venv` に入れる） |
-| `venv を作れない`（Linux） | `sudo apt install python3-venv` を入れて再実行する |
-| `chromium が起動しない`（Linux） | `sudo npx playwright install-deps chromium` を実行して再実行する |
-| `Edge / Chrome が見つからない` | `setup.py` を再実行する（chromium が入る）。特定のブラウザを使いたいときは、環境変数 `MBB_BROWSER` に実行ファイルのパスを入れる |
-| `npm が見つからない` | Node.js を入れてから手順2をやり直す |
-| PDF の文字が別の書体になる | スキルのフォルダを移動した。移動先で `new_deck.py` からデッキを作り直す（同梱フォントを絶対パスで参照しているため） |
+| `No module named 'fitz'` | Setup hasn't run. Do step 2 |
+| `externally-managed-environment` (macOS) | You're installing into the system pip. Use `setup.py` instead of `pip install` (it installs into `.venv`) |
+| `venv を作れない` ("cannot create venv", Linux) | Install `python3-venv` with `sudo apt install python3-venv`, then rerun |
+| `chromium が起動しない` ("chromium won't start", Linux) | Run `sudo npx playwright install-deps chromium`, then rerun |
+| `Edge / Chrome が見つからない` ("Edge / Chrome not found") | Rerun `setup.py` (it installs chromium). To use a specific browser, set the `MBB_BROWSER` environment variable to its executable path |
+| `npm` not found | Install Node.js, then redo step 2 |
+| PDF text renders in a different font | The skill folder was moved. Regenerate the deck with `new_deck.py` in the new location (bundled fonts are referenced by absolute path) |
 
-## 更新
+## Updating
 
 ```bash
 cd ~/.claude/skills/slide-co-create && git pull
 ```
-`package.json` が変わったときだけ `setup.py` を再実行する。
+Rerun `setup.py` only when `package.json` has changed.
 
-## 使い方
+## Usage
 
-Claude Code で「スライド作って」「デッキにして」「資料化して」と頼むと起動します。`/slide-co-create` で明示してもかまいません。成果物は `~/Documents/decks/<案件名>/` に置きます。
+Ask Claude Code to make slides, a deck, or a presentation (for example "スライド作って", "make a deck from this"), and the skill starts. You can also invoke it explicitly with `/slide-co-create`. Output goes to `~/Documents/decks/<project-name>/`.
 
-## 中身
+## Contents
 
-| パス | 内容 |
+| Path | What it is |
 |---|---|
-| `SKILL.md` | Claude への指示書（スキル本体） |
-| `references/slide-rules.md` | スライド規約の正典（約110項目）。食い違ったらこれが勝つ |
-| `references/alignment-and-inputs.md` | Gate A/B の質問表とブループリントの書式 |
-| `references/claim-evidence.md` | 主張・根拠・見せ方の対応、型の選び方 |
-| `references/sample-review.md` | サンプルを差し戻す症状表 |
-| `references/archetype-catalog.md` | 62型の一覧（型ID・使いどころ） |
-| `references/content-review-prompt.md` | 別エージェントに渡すレビュー指示文 |
-| `references/ai-smell-lexicon.md` | AI 臭い言い回しのリスト |
-| `templates/freeform_parts_16x9.html` | 基本パーツ集（27型） |
-| `templates/freeform_parts_more_16x9.html` | 追加パーツ集（35型） |
-| `templates/skin.css` | 色・書体・表紙・フッターを決めるスキン（ロゴ・著作権表記なし） |
-| `scripts/new_deck.py` | パーツ番号を並べてデッキの HTML を作る |
-| `scripts/check_deck.py` | 規約の機械チェック（タイトル長、下部まとめ帯のクラス名、プレースホルダー残りなど） |
-| `scripts/check_layout.mjs` | 実レンダリング検査（重なり、はみ出し、下部まとめ帯、文字サイズ） |
-| `scripts/render_pdf.py` | HTML を PDF と目視用 PNG にする |
-| `scripts/setup.py` | 初回セットアップ（`.venv`、playwright、動作確認） |
-| `assets/` | 型カタログ PDF、PPTX 見本帳、同梱フォント（Noto Sans JP、OFL） |
+| `SKILL.md` | Instructions for Claude (the skill itself) |
+| `references/slide-rules.md` | Canonical slide rules (~110 items). Wins over any other file on conflict |
+| `references/alignment-and-inputs.md` | Gate A/B question sheet and blueprint format |
+| `references/claim-evidence.md` | Mapping of claims, evidence, and visuals; choosing a layout type |
+| `references/sample-review.md` | Symptom checklist for rejecting samples |
+| `references/archetype-catalog.md` | List of the 62 layout types (ID and when to use) |
+| `references/content-review-prompt.md` | Review prompt handed to a separate agent |
+| `references/ai-smell-lexicon.md` | List of AI-sounding phrases to avoid |
+| `templates/freeform_parts_16x9.html` | Base parts library (27 types) |
+| `templates/freeform_parts_more_16x9.html` | Extended parts library (35 types) |
+| `templates/skin.css` | Skin for colors, fonts, cover, and footer (no logo or copyright line) |
+| `scripts/new_deck.py` | Builds deck HTML from a list of part IDs |
+| `scripts/check_deck.py` | Rule linter (title length, bottom-band class names, leftover placeholders, etc.) |
+| `scripts/check_layout.mjs` | Real-render checks (overlap, overflow, bottom band, font sizes) |
+| `scripts/render_pdf.py` | Exports HTML to PDF and per-page PNGs for review |
+| `scripts/setup.py` | First-time setup (`.venv`, playwright, smoke test) |
+| `assets/` | Layout catalog PDF, PPTX sample book, bundled fonts (Noto Sans JP, OFL) |
 
-## 自分の会社用に変える
+## Customizing for your company
 
-- 色・書体・フッターの表記は `templates/skin.css` だけを直す。ロゴと著作権表記は入れていない。自社のものを入れるときは、`skin.css` 末尾のコメントにある例を有効にして値を直す。
-- レビューで受けた指摘は、`references/slide-rules.md` に1行ずつ足していく（手順9で Claude が候補を出す）。チームで使う場合、各自のローカルで足した行は他の人に届かない。全員に効かせたいルールはブランチを切って Pull Request で出す。
-- パーツ集の CSS を直したくなったら、まずデッキ側の `<style>` で直す。どのデッキでも効く直しなら `templates/` にも反映する。
-
-## 出典とライセンス
-
-carnot-tech/consulting-pptx-skill（MIT）をもとに、議論の前半（Gate A〜C）、スキン、文字サイズ検査、下部まとめ帯の検査を加えました。詳細は `NOTICE`、ライセンスは `LICENSE` を参照してください。
+- Change colors, fonts, and footer text in `templates/skin.css` only. No logo or copyright line is included; to add yours, enable the example in the comment at the end of `skin.css` and edit the values.
+- Add review feedback to `references/slide-rules.md`, one line per rule (Claude proposes candidates in step 9). When a team shares this skill, rules added locally don't reach anyone else. Submit rules that should apply to everyone as a pull request from a branch.
+- To change the parts library CSS, first override it in the deck's own `<style>`. If the fix should apply to every deck, also apply it in `templates/`.
