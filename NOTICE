@@ -1,0 +1,20 @@
+slide-co-create — 出典と改変の記録
+
+1. carnot-tech/consulting-pptx-skill（MIT License、LICENSE 参照）
+   https://github.com/carnot-tech/consulting-pptx-skill
+   取り込んだコミット: 5d3b048e944f237c26690ed5f624d7773b302d96（2026-09-30 取得）
+   そのまま使っているもの: references/slide-rules.md, archetype-catalog.md, content-review-prompt.md,
+     ai-smell-lexicon.md, templates/freeform_parts_*.html, scripts/check_deck.py, assets/*
+   改変したもの:
+     - SKILL.md: 前半（Gate A/B/C）を加えて全面的に書き直し
+     - scripts/new_deck.py: templates/skin.css の差し込み、--confidential
+     - scripts/check_layout.mjs: Windows のパス解決、Edge（channel: msedge）で起動
+     - templates/freeform_parts_16x9.html: 裏表紙（b10）のスキル名クレジット行を削除
+   追加したもの: scripts/render_pdf.py（Edge で PDF 化＋PNG 化）, templates/skin.css, assets/fonts/
+
+2. assets/fonts/NotoSansJP-{Regular,Medium,Bold}.ttf（SIL Open Font License 1.1、OFL.txt 参照）
+   Windows に入っている NotoSansJP-VF.ttf から fontTools の instancer で wght 400/500/700 を固定した静的版。
+   可変フォントのままだと Edge が PDF に Type3 で埋め込み、書体名と太字が失われるため同梱している。
+   HTML からは絶対パス（file://）で参照するので、スキルのフォルダを動かしたら new_deck.py で作り直す。
+
+上流を取り込むときは、上の「改変したもの」だけ差分を手で合わせる。
